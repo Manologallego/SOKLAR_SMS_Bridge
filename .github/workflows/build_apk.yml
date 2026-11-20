@@ -22,7 +22,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-
+      
+      - name: Install unzip (needed by Android setup)
+        run: |
+          apt-get update
+          apt-get install -y unzip wget
+          
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
