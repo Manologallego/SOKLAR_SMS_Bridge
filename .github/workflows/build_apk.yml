@@ -5,8 +5,7 @@ on:
 
 jobs:
   apk:
-    runs-on: ubuntu-latest
-    container: ubuntu:22.04  # <-- Fuerza Ubuntu 22.04 para todo el job
+    runs-on: ubuntu-22.04
     timeout-minutes: 40
 
     steps:
@@ -35,18 +34,15 @@ jobs:
 
       - name: Install system deps (p4a/buildozer)
         run: |
-          # Actualizar la lista de paquetes
-          apt-get update
+          sudo apt-get update
           
-          # Intentar instalar libtinfo5 directamente desde los repositorios
-          apt-get install -y libtinfo5
-          
-          # Instalar el resto de dependencias
-          apt-get install -y \
+          # libtinfo5 y dependencias (ahora sí están en los repos de 22.04)
+          sudo apt-get install -y \
+            libtinfo5 \
             build-essential git zip unzip openjdk-17-jdk autoconf libtool \
             pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev libltdl-dev
-
+            
       - name: Install Flet CLI
         run: python -m pip install "flet[cli]==0.24.1"
 
