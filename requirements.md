@@ -1,0 +1,4 @@
+flet==0.24.1
+httpx==0.27.2
+pydantic==2.9.2
+python-dotenv==1.0.1

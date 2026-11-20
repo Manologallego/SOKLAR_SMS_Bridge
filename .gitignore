@@ -1,0 +1,28 @@
+# Entorno
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+
+# Flet
+build/
+dist/
+*.spec
+
+# Base de datos local
+*.db
+*.sqlite
+*.sqlite3
+
+# Secretos
+.env
+*.txt
+*.jks
+*.keystore
+
+# Sistema
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
