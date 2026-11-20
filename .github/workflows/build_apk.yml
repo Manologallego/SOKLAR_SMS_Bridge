@@ -30,11 +30,21 @@ jobs:
         with:
           packages: 'platform-tools'
 
-      - name: Install libtinfo5 (from Ubuntu 22.04)
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: libtinfo5
-          version: 1.0
+      - name: Install libtinfo5 and system deps
+        run: |
+          sudo apt-get update
+          
+          # Descargar la versión .1 que sí está disponible
+          wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
+          
+          # Instalar el paquete descargado
+          sudo apt install -y ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
+          
+          # Instalar el resto de dependencias
+          sudo apt-get install -y \
+            build-essential git zip unzip openjdk-17-jdk autoconf libtool \
+            pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev \
+            cmake libffi-dev libssl-dev libltdl-dev
 
       - name: Install system deps (p4a/buildozer)
         run: |
