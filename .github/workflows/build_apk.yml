@@ -33,9 +33,15 @@ jobs:
       - name: Install system deps (p4a/buildozer)
         run: |
           sudo apt-get update
+          
+          # Instalar libtinfo5 manualmente (ya no está en Ubuntu 24.04)
+          wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.2_amd64.deb
+          sudo apt install -y ./libtinfo5_6.3-2ubuntu0.2_amd64.deb
+          
+          # Ahora sí, el resto de dependencias (sin libtinfo5 en la lista)
           sudo apt-get install -y \
             build-essential git zip unzip openjdk-17-jdk autoconf libtool \
-            pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 \
+            pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev libltdl-dev
 
       - name: Install Flet CLI
