@@ -57,14 +57,11 @@ jobs:
 
       - name: Build APK (solo esqueleto)
         env:
-          FLET_CLI_SKIP_FLUTTER_DOCTOR: "true"  # <-- Omitir flutter doctor
+          FLET_CLI_SKIP_FLUTTER_DOCTOR: "true"
         run: |
           flet build apk \
             --build-version 1.0.0 \
             --build-number ${{ github.run_number }} \
-            --project "SOKLAR SMS" \
-            --org "cu.soklar" \
-            --module-name "main" \
             --verbose
 
       # Flet deja el proyecto Android en build/apk/
