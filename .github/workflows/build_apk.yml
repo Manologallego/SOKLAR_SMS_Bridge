@@ -35,13 +35,12 @@ jobs:
       - name: Install system deps (p4a/buildozer)
         run: |
           sudo apt-get update
-          
-          # libtinfo5 y dependencias (ahora sí están en los repos de 22.04)
           sudo apt-get install -y \
             libtinfo5 \
             build-essential git zip unzip openjdk-17-jdk autoconf libtool \
             pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev \
-            cmake libffi-dev libssl-dev libltdl-dev
+            cmake libffi-dev libssl-dev libltdl-dev \
+            libgtk-3-dev ninja-build  # <-- Añadidos para satisfacer a flutter doctor
             
       - name: Install Flet CLI
         run: python -m pip install "flet[cli]==0.24.1"
