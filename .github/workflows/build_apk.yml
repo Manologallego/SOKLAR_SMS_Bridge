@@ -27,7 +27,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y unzip wget
-          
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
@@ -35,20 +35,18 @@ jobs:
 
       - name: Install libtinfo5 and system deps
         run: |
-          sudo apt-get update
+          apt-get update
           
-          # Descargar la versión 6.4-2 desde el archivo de Ubuntu (enlace verificado)
+          # Descargar e instalar libtinfo5 (sin sudo, ya eres root en el contenedor)
           wget http://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.4-2_amd64.deb
-          
-          # Instalar el paquete descargado
-          sudo dpkg -i libtinfo5_6.4-2_amd64.deb
+          dpkg -i libtinfo5_6.4-2_amd64.deb
           
           # Instalar el resto de dependencias
-          sudo apt-get install -y \
+          apt-get install -y \
             build-essential git zip unzip openjdk-17-jdk autoconf libtool \
             pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev \
             cmake libffi-dev libssl-dev libltdl-dev
-
+            
       - name: Install system deps
         run: |
           apt-get update
