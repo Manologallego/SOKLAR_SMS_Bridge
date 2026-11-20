@@ -64,7 +64,7 @@ jobs:
             --org "cu.soklar" \
             --module-name "main" \
             --skip-flutter-doctor \
-            --verbose --yes
+            --verbose
 
       # Flet deja el proyecto Android en build/apk/
       - name: Inject SmsReceiver stub
