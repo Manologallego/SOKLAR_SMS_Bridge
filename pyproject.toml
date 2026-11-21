@@ -4,8 +4,8 @@ version = "1.0.0"
 requires-python = ">=3.11"
 dependencies = [
     "flet==1.1.2",
-    "httpx>=0.28.1",      # <-- Actualizado: ahora cumple con el requisito de Flet
-    "pydantic==2.11.7",
+    "httpx>=0.28.1",
+    "pydantic>=2.11.0,<3.0.0",
     "python-dotenv==1.0.1",
 ]
 
@@ -17,7 +17,7 @@ product = "SOKLAR SMS"
 path = "src"
 module = "main"
 
-[tool.flet.android.permissions]
+[tool.flet.android.permission]
 "android.permission.RECEIVE_SMS" = true
 "android.permission.READ_SMS" = true
 "android.permission.SEND_SMS" = true
