@@ -45,17 +45,12 @@ jobs:
       - name: Install Flet CLI
         run: python -m pip install "flet[cli]>=0.25.0"
 
-      - name: Build APK (solo esqueleto)
-        env:
-          FLET_CLI_SKIP_FLUTTER_DOCTOR: "true"
-          FLET_CLI_NO_RICH_OUTPUT: "1"   # Desactiva la salida interactiva de Rich
-          PYTHONUTF8: "1"                # Fuerza UTF-8
-        run: |
-          flet build apk \
-            --build-version 1.0.0 \
-            --build-number ${{ github.run_number }} \
-            --yes \
-            --verbose
+      - name: Build APK with Flet
+        uses: flet-dev/flet-build-action@v1
+        with:
+          target: apk
+          runner-python-version: "3.11"  # La misma que usas
+          build-number: ${{ github.run_number }}
 
       # Flet deja el proyecto Android en build/apk/
       - name: Inject SmsReceiver stub
