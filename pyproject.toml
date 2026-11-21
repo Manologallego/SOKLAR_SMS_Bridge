@@ -1,24 +1,32 @@
 [project]
-name = "soklar-sms"
-version = "1.0.0"
-requires-python = ">=3.11"
+name = "soklar-sms-bridge"
+version = "0.1.0"
+description = "SOKLAR SMS Bridge - Conector POS"
+requires-python = ">=3.12,<3.13"
 dependencies = [
-    "flet[cli]==1.1.2",   # <-- Cambia "flet" por "flet[cli]"
+    "flet==1.1.2",
     "httpx>=0.28.1",
     "pydantic>=2.11.0,<3.0.0",
     "python-dotenv==1.0.1",
 ]
 
 [tool.flet]
+product = "SOKLAR SMS Bridge"
+company = "SOKLAR"
+copyright = "© 2026 SOKLAR"
 org = "cu.soklar"
-product = "SOKLAR SMS"
+app_id = "cu.soklar.smsbridge"
 
 [tool.flet.app]
 path = "src"
 module = "main"
 
 [tool.flet.android.permission]
+# Permisos necesarios para recibir y enviar SMS
 "android.permission.RECEIVE_SMS" = true
 "android.permission.READ_SMS" = true
 "android.permission.SEND_SMS" = true
 "android.permission.INTERNET" = true
+# Permisos para que el servicio funcione en segundo plano
+"android.permission.FOREGROUND_SERVICE" = true
+"android.permission.POST_NOTIFICATIONS" = true
