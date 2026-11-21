@@ -1,26 +1,82 @@
-name: Build APK
+name: Build APK SOKLAR SMS Bridge
 
 on:
   workflow_dispatch:
 
 jobs:
-  apk:
-    runs-on: ubuntu-22.04
+  build:
+    runs-on: ubuntu-latest
     timeout-minutes: 40
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Build APK with Flet
-        uses: flet-dev/flet-build-action@v1
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
         with:
-          target: apk
-          runner-python-version: "3.11"
-          build-number: ${{ github.run_number }}
+          python-version: '3.12'
 
-      - name: Upload APK
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Forzar Android SDK 35
+        run: |
+          yes | sdkmanager "platforms;android-35" "build-tools;35.0.0" || true
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Compilar APK base con Flet
+        run: |
+          flet build apk -v
+
+      - name: Inyectar SmsReceiver stub
+        run: |
+          # Asumimos que tu script sabe encontrar el proyecto Android generado
+          python android-stub/copy_into_build.py build/apk
+
+      - name: Recompilar APK con el stub
+        working-directory: build/apk/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease -x lint
+
+      - name: Firmar APK final
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          # Decodificar el keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/release.keystore
+          
+          # Localizar el APK compilado por Gradle
+          APK_PATH=$(find build/apk/android/app/build/outputs/apk/release -name "*.apk" | head -n1)
+          
+          # Firmar el APK
+          BT=$(ls $ANDROID_HOME/build-tools | sort -V | tail -n1)
+          $ANDROID_HOME/build-tools/$BT/apksigner sign \
+            --ks $RUNNER_TEMP/release.keystore \
+            --ks-pass "pass:$KEYSTORE_PASSWORD" \
+            --ks-key-alias "$KEY_ALIAS" \
+            --key-pass "pass:$KEY_PASSWORD" \
+            --out soklar-sms-bridge.apk "$APK_PATH"
+          
+          rm -f $RUNNER_TEMP/release.keystore
+
+      - name: Subir APK
         uses: actions/upload-artifact@v4
         with:
-          name: soklar-sms-apk
-          path: ${{ steps.build.outputs.archive-path }}
-          if-no-files-found: error
+          name: SOKLAR-SMS-Bridge-APK
+          path: soklar-sms-bridge.apk
+          retention-days: 30
