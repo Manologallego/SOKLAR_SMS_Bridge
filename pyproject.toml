@@ -1,12 +1,11 @@
 [project]
 name = "soklar-sms"
 version = "1.0.0"
-description = "SOKLAR SMS - Conector POS"
 requires-python = ">=3.11"
 dependencies = [
-    "flet==1.1.2",       # <-- Actualizado a la versión del CLI
-    "httpx==0.27.2",
-    "pydantic==2.11.7", 
+    "flet==1.1.2",
+    "httpx>=0.28.1",      # <-- Actualizado: ahora cumple con el requisito de Flet
+    "pydantic==2.11.7",
     "python-dotenv==1.0.1",
 ]
 
