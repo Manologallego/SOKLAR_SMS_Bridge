@@ -11,79 +11,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v4
-        with:
-          packages: 'platform-tools'
-
-      - name: Install unzip (needed by Android setup)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y unzip wget
-
-      - name: Install system deps (p4a/buildozer)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libtinfo5 \
-            build-essential git zip unzip openjdk-17-jdk autoconf libtool \
-            pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev \
-            cmake libffi-dev libssl-dev libltdl-dev \
-            libgtk-3-dev ninja-build  # <-- Añadidos para satisfacer a flutter doctor
-            
-      - name: Install Flet CLI
-        run: python -m pip install "flet[cli]>=0.25.0"
-
       - name: Build APK with Flet
         uses: flet-dev/flet-build-action@v1
         with:
           target: apk
-          runner-python-version: "3.11"  # La misma que usas
+          runner-python-version: "3.11"
           build-number: ${{ github.run_number }}
-
-      # Flet deja el proyecto Android en build/apk/
-      - name: Inject SmsReceiver stub
-        run: |
-          python android-stub/copy_into_build.py build/apk
-
-      - name: Recompile APK with stub
-        working-directory: build/apk/android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleRelease -x lint
-
-      - name: Sign APK
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
-          APK=$(find build/apk/android/app/build/outputs/apk/release -name "*.apk" | head -n1)
-          BT=$(ls $ANDROID_HOME/build-tools | sort -V | tail -n1)
-          $ANDROID_HOME/build-tools/$BT/apksigner sign \
-            --ks release.keystore \
-            --ks-pass "pass:$KEYSTORE_PASSWORD" \
-            --ks-key-alias "$KEY_ALIAS" \
-            --key-pass "pass:$KEY_PASSWORD" \
-            --out soklar-sms.apk "$APK"
-          rm -f release.keystore
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: soklar-sms-apk
-          path: soklar-sms.apk
+          path: ${{ steps.build.outputs.archive-path }}
           if-no-files-found: error
