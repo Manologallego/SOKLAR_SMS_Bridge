@@ -34,6 +34,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'   # La versión exacta que pide Flet
+          channel: 'stable'
+          cache: true
 
       - name: Compilar APK base con Flet
         run: |
