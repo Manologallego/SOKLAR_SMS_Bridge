@@ -45,21 +45,27 @@ jobs:
       - name: Compilar APK base con Flet
         run: |
           flet build apk -v
-          
-      - name: Buscar ubicación de AndroidManifest
-        run: find . -name "AndroidManifest.xml"
 
+      - name: Buscar ubicación de AndroidManifest
+        run: |
+          echo "Buscando AndroidManifest.xml y gradlew..."
+          find build -name "AndroidManifest.xml"
+          find build -name "gradlew"
+
+      # 1. Inyectar el stub
       - name: Inyectar SmsReceiver stub
         run: |
-          # Le pasamos la ruta de la app de Flutter generada
-          python android-stub/copy_into_build.py build/flutter/app
+          # Cambiamos la ruta a la carpeta donde Flet 1.x genera el proyecto de Android
+          python android-stub/copy_into_build.py build/apk
 
+      # 2. Recompilar con Gradle
       - name: Recompilar APK con el stub
-        working-directory: build/flutter/app/android
+        working-directory: build/apk/android
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease -x lint
 
+      # 3. Firmar el APK
       - name: Firmar APK final
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -69,8 +75,8 @@ jobs:
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/release.keystore
           
-          # Buscar el APK en la nueva ruta
-          APK_PATH=$(find build/flutter/app/android/app/build/outputs/apk/release -name "*.apk" | head -n1)
+          # Buscamos el APK generado por Gradle en build/apk/android
+          APK_PATH=$(find build/apk/android/app/build/outputs/apk/release -name "*.apk" | head -n1)
           
           BT=$(ls $ANDROID_HOME/build-tools | sort -V | tail -n1)
           $ANDROID_HOME/build-tools/$BT/apksigner sign \
