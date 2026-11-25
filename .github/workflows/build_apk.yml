@@ -45,6 +45,9 @@ jobs:
       - name: Compilar APK base con Flet
         run: |
           flet build apk -v
+          
+      - name: Buscar ubicación de AndroidManifest
+        run: find . -name "AndroidManifest.xml"
 
       - name: Inyectar SmsReceiver stub
         run: |
