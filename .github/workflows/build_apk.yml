@@ -62,12 +62,25 @@ jobs:
           echo "Buscando site-packages y python-app..."
           find build/flutter/build -maxdepth 3 -type d \( -name "site-packages" -o -name "python-app" \)
 
+      - name: Verificar contenido de site-packages y python-app
+        run: |
+          echo "Contenido de site-packages:"
+          ls -la build/flutter/build/site-packages/
+          echo "Contenido de python-app:"
+          ls -la build/flutter/build/python-app/
+          
       # 2. Recompilar con Gradle
       - name: Recompilar APK con el stub
         working-directory: build/flutter/android
         run: |
-          export SERIOUS_PYTHON_SITE_PACKAGES=$(pwd)/../build/site-packages
-          export SERIOUS_PYTHON_APP=$(pwd)/../build/python-app
+          # Exportar las rutas absolutas que Flet 1.1.2 espera
+          export SERIOUS_PYTHON_SITE_PACKAGES="${{ github.workspace }}/build/flutter/build/site-packages"
+          export SERIOUS_PYTHON_APP="${{ github.workspace }}/build/flutter/build/python-app"
+
+          # Verificar que las carpetas existen (opcional para depuración)
+          ls -la "$SERIOUS_PYTHON_SITE_PACKAGES" || echo "⚠️ La carpeta site-packages no existe"
+          ls -la "$SERIOUS_PYTHON_APP" || echo "⚠️ La carpeta python-app no existe"
+
           chmod +x gradlew
           ./gradlew assembleRelease -x lint
 
