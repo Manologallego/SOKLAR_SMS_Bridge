@@ -30,3 +30,6 @@ module = "main"
 # Permisos para que el servicio funcione en segundo plano
 "android.permission.FOREGROUND_SERVICE" = true
 "android.permission.POST_NOTIFICATIONS" = true
+
+[tool.flet.android]
+target_arch = ["arm64-v8a", "armeabi-v7a"]
