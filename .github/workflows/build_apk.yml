@@ -46,45 +46,41 @@ jobs:
         run: |
           flet build apk -v
 
-      - name: Buscar ubicación de AndroidManifest
+      - name: Extraer Python App y Site Packages del APK base
         run: |
-          echo "Buscando AndroidManifest.xml y gradlew..."
-          find build -name "AndroidManifest.xml"
-          find build -name "gradlew"
+          # 1. Buscar el APK generado por Flet
+          APK_PATH=$(find build -name "*.apk" | head -n1)
+          echo "APK base encontrado en: $APK_PATH"
+          
+          # 2. Crear carpeta temporal para extraer
+          mkdir -p build/temp_apk
+          unzip -q "$APK_PATH" -d build/temp_apk
+          
+          # 3. Extraer site-packages
+          mkdir -p build/site-packages
+          unzip -q build/temp_apk/assets/sitepackages.zip -d build/site-packages
+          
+          # 4. Extraer python-app
+          mkdir -p build/python-app
+          unzip -q build/temp_apk/assets/app.zip -d build/python-app
+          
+          # 5. Limpiar temporales
+          rm -rf build/temp_apk
 
       - name: Inyectar SmsReceiver stub
         run: |
-          # Al pasarle 'build/flutter', el script internamente busca en 'build/flutter/android/...'
           python android-stub/copy_into_build.py build/flutter
 
-      - name: Buscar directorios de serious_python
-        run: |
-          echo "Buscando site-packages y python-app..."
-          find build/flutter/build -maxdepth 3 -type d \( -name "site-packages" -o -name "python-app" \)
-
-      - name: Verificar contenido de site-packages y python-app
-        run: |
-          echo "Contenido de site-packages:"
-          ls -la build/flutter/build/site-packages/
-          echo "Contenido de python-app:"
-          ls -la build/flutter/build/python-app/
-          
-      # 2. Recompilar con Gradle
       - name: Recompilar APK con el stub
         working-directory: build/flutter/android
         run: |
-          # Exportar las rutas absolutas que Flet 1.1.2 espera
-          export SERIOUS_PYTHON_SITE_PACKAGES="${{ github.workspace }}/build/flutter/build/site-packages"
-          export SERIOUS_PYTHON_APP="${{ github.workspace }}/build/flutter/build/python-app"
-
-          # Verificar que las carpetas existen (opcional para depuración)
-          ls -la "$SERIOUS_PYTHON_SITE_PACKAGES" || echo "⚠️ La carpeta site-packages no existe"
-          ls -la "$SERIOUS_PYTHON_APP" || echo "⚠️ La carpeta python-app no existe"
-
+          # Le decimos a Gradle dónde están los archivos extraídos
+          export SERIOUS_PYTHON_APP="${{ github.workspace }}/build/python-app"
+          export SERIOUS_PYTHON_SITE_PACKAGES="${{ github.workspace }}/build/site-packages"
+          
           chmod +x gradlew
           ./gradlew assembleRelease -x lint
 
-      # 3. Firmar el APK
       - name: Firmar APK final
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -94,7 +90,7 @@ jobs:
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/release.keystore
           
-          # Buscamos el APK generado por Gradle en la ruta de Flutter
+          # El APK recompilado estará en la carpeta de Gradle
           APK_PATH=$(find build/flutter/android/app/build/outputs/apk/release -name "*.apk" | head -n1)
           
           BT=$(ls $ANDROID_HOME/build-tools | sort -V | tail -n1)
@@ -107,7 +103,6 @@ jobs:
           
           rm -f $RUNNER_TEMP/release.keystore
 
-      # 4. Subir el artefacto
       - name: Subir APK
         uses: actions/upload-artifact@v4
         with:
