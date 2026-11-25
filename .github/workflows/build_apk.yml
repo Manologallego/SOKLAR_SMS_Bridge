@@ -55,12 +55,12 @@ jobs:
       # 1. Inyectar el stub
       - name: Inyectar SmsReceiver stub
         run: |
-          # Cambiamos la ruta a la carpeta donde Flet 1.x genera el proyecto de Android
-          python android-stub/copy_into_build.py build/apk
+          # Pasamos la ruta donde está el proyecto Android (donde está la carpeta 'app')
+          python android-stub/copy_into_build.py build/flutter/android
 
       # 2. Recompilar con Gradle
       - name: Recompilar APK con el stub
-        working-directory: build/apk/android
+        working-directory: build/flutter/android
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease -x lint
@@ -75,8 +75,8 @@ jobs:
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/release.keystore
           
-          # Buscamos el APK generado por Gradle en build/apk/android
-          APK_PATH=$(find build/apk/android/app/build/outputs/apk/release -name "*.apk" | head -n1)
+          # Buscamos el APK generado por Gradle en la ruta de Flutter
+          APK_PATH=$(find build/flutter/android/app/build/outputs/apk/release -name "*.apk" | head -n1)
           
           BT=$(ls $ANDROID_HOME/build-tools | sort -V | tail -n1)
           $ANDROID_HOME/build-tools/$BT/apksigner sign \
@@ -88,6 +88,7 @@ jobs:
           
           rm -f $RUNNER_TEMP/release.keystore
 
+      # 4. Subir el artefacto
       - name: Subir APK
         uses: actions/upload-artifact@v4
         with:
