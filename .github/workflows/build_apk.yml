@@ -48,23 +48,21 @@ jobs:
 
       - name: Extraer Python App y Site Packages del APK base
         run: |
-          # 1. Buscar el APK generado por Flet
           APK_PATH=$(find build -name "*.apk" | head -n1)
           echo "APK base encontrado en: $APK_PATH"
           
-          # 2. Crear carpeta temporal para extraer
+          # Limpiar extracciones previas (por si acaso)
+          rm -rf build/site-packages build/python-app build/temp_apk
+          
           mkdir -p build/temp_apk
           unzip -q "$APK_PATH" -d build/temp_apk
           
-          # 3. Extraer site-packages
           mkdir -p build/site-packages
-          unzip -q build/temp_apk/assets/sitepackages.zip -d build/site-packages
+          unzip -o -q build/temp_apk/assets/sitepackages.zip -d build/site-packages
           
-          # 4. Extraer python-app
           mkdir -p build/python-app
-          unzip -q build/temp_apk/assets/app.zip -d build/python-app
+          unzip -o -q build/temp_apk/assets/app.zip -d build/python-app
           
-          # 5. Limpiar temporales
           rm -rf build/temp_apk
 
       - name: Inyectar SmsReceiver stub
