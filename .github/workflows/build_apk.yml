@@ -86,10 +86,20 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/release.keystore
+          # 1. Buscar el APK en toda la carpeta de Flutter (evita rutas hardcodeadas)
+          APK_PATH=$(find build/flutter -name "*.apk" | head -n1)
           
-          # El APK recompilado estará en la carpeta de Gradle
-          APK_PATH=$(find build/flutter/android/app/build/outputs/apk/release -name "*.apk" | head -n1)
+          # 2. Verificar que el APK realmente se haya generado
+          if [ -z "$APK_PATH" ]; then
+            echo "❌ Error: No se encontró ningún APK en build/flutter"
+            find build -name "*.apk"  # Imprime lo que sí haya para depurar
+            exit 1
+          fi
+          
+          echo "✅ APK encontrado en: $APK_PATH"
+
+          # 3. Decodificar y firmar
+          echo "$KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/release.keystore
           
           BT=$(ls $ANDROID_HOME/build-tools | sort -V | tail -n1)
           $ANDROID_HOME/build-tools/$BT/apksigner sign \
