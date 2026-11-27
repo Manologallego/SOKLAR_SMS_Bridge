@@ -42,6 +42,10 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Limpiar build anterior
+        run: |
+          rm -rf build/
+
       - name: Forzar inclusión de certifi
         run: |
           # Instalar certifi si no está (por si acaso)
@@ -58,11 +62,9 @@ jobs:
           # Verificar que se copió
           ls -la src/certifi/
 
-      - name: Limpiar build anterior
-        run: |
-          rm -rf build/
-
       - name: Compilar APK base con Flet
+        env:
+          FLET_CLI_SKIP_FLUTTER_DOCTOR: "true"
         run: |
           flet build apk -v --arch arm64-v8a armeabi-v7a
 
