@@ -37,4 +37,3 @@ android = "assets/icon.png"
 
 [tool.flet.android]
 target_arch = ["arm64-v8a", "armeabi-v7a"]
-extract_packages = ["certifi"]
