@@ -44,7 +44,7 @@ jobs:
 
       - name: Compilar APK base con Flet
         run: |
-          flet build apk -v --arch arm64-v8a armeabi-v7a
+          flet build apk -v --arch arm64-v8a armeabi-v7a --include certifi
 
       - name: Extraer Python App y Site Packages del APK base
         run: |
