@@ -11,7 +11,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 NS = "http://schemas.android.com/apk/res/android"
-
+ET.register_namespace('android', NS)
 
 def merge_manifest(orig: Path, patch: Path) -> None:
     # Parsear ambos
