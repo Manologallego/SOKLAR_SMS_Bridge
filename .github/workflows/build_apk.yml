@@ -42,9 +42,29 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Forzar inclusión de certifi
+        run: |
+          # Instalar certifi si no está (por si acaso)
+          pip install certifi
+          
+          # Encontrar la ubicación de certifi en el entorno de Python
+          CERTIFI_PATH=$(python -c "import certifi, os; print(os.path.dirname(certifi.__file__))")
+          echo "certifi se encuentra en: $CERTIFI_PATH"
+          
+          # Copiar el paquete completo a la carpeta src de tu app
+          # (Flet incluirá todo lo que esté en src/ dentro del app.zip)
+          cp -r "$CERTIFI_PATH" src/
+          
+          # Verificar que se copió
+          ls -la src/certifi/
+
+      - name: Limpiar build anterior
+        run: |
+          rm -rf build/
+
       - name: Compilar APK base con Flet
         run: |
-          flet build apk -v --arch arm64-v8a armeabi-v7a --include certifi
+          flet build apk -v --arch arm64-v8a armeabi-v7a
 
       - name: Extraer Python App y Site Packages del APK base
         run: |
